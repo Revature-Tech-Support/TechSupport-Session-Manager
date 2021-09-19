@@ -10,35 +10,50 @@ import java.util.UUID;
 
 @Table("tickets")
 public class Ticket {
-    @PrimaryKeyColumn(name="issueID", type= PrimaryKeyType.PARTITIONED )
-    private UUID issueID = UUID.randomUUID();
+
+    @PrimaryKeyColumn(name="id", type= PrimaryKeyType.PARTITIONED )
+    private UUID id = UUID.randomUUID();
     private String issueTitle;
     private UUID openedBy;
     private UUID closedBy;
     private Timestamp openTime = new Timestamp(System.currentTimeMillis());
     private Timestamp reviewTime;
-    private Timestamp closeTime;
+    private Timestamp closedTime;
     private boolean inQueue = true;
     private boolean reviewed = false; //flag to distinguish if issue is closed or not
 
-    public Ticket(UUID issueID, String issueTitle, UUID openedBy, UUID closeBy, Timestamp openTime, Timestamp reviewTime, Timestamp closeTime, boolean inQueue, boolean reviewed) {
-        this.issueID = issueID;
+    public Ticket () {}
+
+    public Ticket( String issueTitle, UUID openedBy) {
+        this.id = UUID.randomUUID();
         this.issueTitle = issueTitle;
         this.openedBy = openedBy;
-        this.closedBy = closeBy;
+        this.closedBy = null;
+        this.openTime = new Timestamp(System.currentTimeMillis());
+        this.reviewTime = null;
+        this.closedTime = null;
+        this.inQueue = true;
+        this.reviewed = false;
+    }
+
+    public Ticket(UUID id, String issueTitle, UUID openedBy, UUID closedBy, Timestamp openTime, Timestamp reviewTime, Timestamp closedTime, boolean inQueue, boolean reviewed) {
+        this.id = id;
+        this.issueTitle = issueTitle;
+        this.openedBy = openedBy;
+        this.closedBy = closedBy;
         this.openTime = openTime;
         this.reviewTime = reviewTime;
-        this.closeTime = closeTime;
+        this.closedTime = closedTime;
         this.inQueue = inQueue;
         this.reviewed = reviewed;
     }
 
-    public UUID getIssueID() {
-        return issueID;
+    public UUID getId() {
+        return id;
     }
 
-    public void setIssueID(UUID issueID) {
-        this.issueID = issueID;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public String getIssueTitle() {
@@ -57,12 +72,12 @@ public class Ticket {
         this.openedBy = openedBy;
     }
 
-    public UUID getCloseBy() {
+    public UUID getClosedBy() {
         return closedBy;
     }
 
-    public void setCloseBy(UUID closeBy) {
-        this.closedBy = closeBy;
+    public void setClosedBy(UUID closedBy) {
+        this.closedBy = closedBy;
     }
 
     public Timestamp getOpenTime() {
@@ -81,12 +96,12 @@ public class Ticket {
         this.reviewTime = reviewTime;
     }
 
-    public Timestamp getCloseTime() {
-        return closeTime;
+    public Timestamp getClosedTime() {
+        return closedTime;
     }
 
-    public void setCloseTime(Timestamp closeTime) {
-        this.closeTime = closeTime;
+    public void setClosedTime(Timestamp closedTime) {
+        this.closedTime = closedTime;
     }
 
     public boolean isInQueue() {
@@ -110,24 +125,24 @@ public class Ticket {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Ticket ticket = (Ticket) o;
-        return inQueue == ticket.inQueue && reviewed == ticket.reviewed && Objects.equals(issueID, ticket.issueID) && Objects.equals(issueTitle, ticket.issueTitle) && Objects.equals(openedBy, ticket.openedBy) && Objects.equals(closedBy, ticket.closedBy) && Objects.equals(openTime, ticket.openTime) && Objects.equals(reviewTime, ticket.reviewTime) && Objects.equals(closeTime, ticket.closeTime);
+        return inQueue == ticket.inQueue && reviewed == ticket.reviewed && Objects.equals(id, ticket.id) && Objects.equals(issueTitle, ticket.issueTitle) && Objects.equals(openedBy, ticket.openedBy) && Objects.equals(closedBy, ticket.closedBy) && Objects.equals(openTime, ticket.openTime) && Objects.equals(reviewTime, ticket.reviewTime) && Objects.equals(closedTime, ticket.closedTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(issueID, issueTitle, openedBy, closedBy, openTime, reviewTime, closeTime, inQueue, reviewed);
+        return Objects.hash(id, issueTitle, openedBy, closedBy, openTime, reviewTime, closedTime, inQueue, reviewed);
     }
 
     @Override
     public String toString() {
         return "Ticket{" +
-                "issueID=" + issueID +
+                "id=" + id +
                 ", issueTitle='" + issueTitle + '\'' +
                 ", openedBy=" + openedBy +
                 ", closedBy=" + closedBy +
                 ", openTime=" + openTime +
                 ", reviewTime=" + reviewTime +
-                ", closeTime=" + closeTime +
+                ", closedTime=" + closedTime +
                 ", inQueue=" + inQueue +
                 ", reviewed=" + reviewed +
                 '}';

@@ -15,7 +15,7 @@ public class RouterConfig {
     public RouterFunction<ServerResponse> routes(QueueController queueController) {
         return route(GET("/queue/ticket"), queueController::getOldestTicket)
                 .andRoute(POST("/queue"), queueController::create)
-                .andRoute(PUT("/queue/{id}"), queueController::delete);
+                .andRoute(PUT("/queue/{id}"), queueController::update);
 
     }
 }
