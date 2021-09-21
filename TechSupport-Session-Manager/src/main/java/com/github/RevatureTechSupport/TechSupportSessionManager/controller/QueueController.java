@@ -1,7 +1,7 @@
 package com.github.RevatureTechSupport.TechSupportSessionManager.controller;
 
 import com.github.RevatureTechSupport.TechSupportSessionManager.Repository.QueueRepository;
-import com.github.RevatureTechSupport.TechSupportSessionManager.domain.Ticket;
+import com.github.RevatureTechSupport.TechSupportSessionManager.domain.Issue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,23 +23,23 @@ public class QueueController {
     private QueueRepository queueRepository;
 
     //Get the oldest ticket in the queue
-    public Mono<ServerResponse> getOldestTicket(ServerRequest req) {
+    public Mono<ServerResponse> getOldestIssue(ServerRequest req) {
         return this.queueRepository.findOldestTicket()
-                .flatMap(ticket-> {
-                    ticket.setInQueue(false);
-                    ticket.setReviewed(true);
-                    ticket.setReviewTime(new Timestamp(System.currentTimeMillis()));
-                    return this.queueRepository.save(ticket) //cassandra creates a duplicate entry b/c partition key inQueue is set to false
-                        .flatMap(saved -> ServerResponse.ok().body(Mono.just(saved), Ticket.class))
+                .flatMap(issue -> {
+                    issue.setInQueue(false);
+                    issue.setReviewed(true);
+                    issue.setReviewTime(new Timestamp(System.currentTimeMillis()));
+                    return this.queueRepository.save(issue) //cassandra creates a duplicate entry b/c partition key inQueue is set to false
+                        .flatMap(saved -> ServerResponse.ok().body(Mono.just(saved), Issue.class))
                             .switchIfEmpty(ServerResponse.notFound().build());
         });
     }
 
-    //Create a new Ticket in the queue
+    //Create a new Issue in the queue
     public Mono<ServerResponse> create(ServerRequest req){
-        return req.bodyToMono(Ticket.class)
-                .flatMap(ticket-> this.queueRepository.save(ticket))
-                .flatMap(ticket-> ServerResponse.created(URI.create("/queue/" + ticket.getId().toString())).build());
+        return req.bodyToMono(Issue.class)
+                .flatMap(issue -> this.queueRepository.save(issue))
+                .flatMap(issue -> ServerResponse.created(URI.create("/queue/" + issue.getIssueId().toString())).build());
     }
 
     //Update the ticket status to reviewed

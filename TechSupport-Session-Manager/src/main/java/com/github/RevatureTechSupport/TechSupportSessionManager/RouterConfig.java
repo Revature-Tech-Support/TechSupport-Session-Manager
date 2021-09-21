@@ -13,7 +13,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 public class RouterConfig {
     @Bean
     public RouterFunction<ServerResponse> routes(QueueController queueController) {
-        return route(GET("/queue/ticket"), queueController::getOldestTicket)
+        return route(GET("/queue/issue"), queueController::getOldestIssue)
                 .andRoute(POST("/queue"), queueController::create)
                 .andRoute(PUT("/queue/{id}"), queueController::update);
 
