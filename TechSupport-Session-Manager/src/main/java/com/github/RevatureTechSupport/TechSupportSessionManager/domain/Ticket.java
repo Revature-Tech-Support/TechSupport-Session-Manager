@@ -16,9 +16,11 @@ public class Ticket {
     private String issueTitle;
     private UUID openedBy;
     private UUID closedBy;
+    @PrimaryKeyColumn(name="opentime", type= PrimaryKeyType.CLUSTERED )
     private Timestamp openTime = new Timestamp(System.currentTimeMillis());
     private Timestamp reviewTime;
     private Timestamp closedTime;
+    @PrimaryKeyColumn(name="inqueue", type= PrimaryKeyType.PARTITIONED )
     private boolean inQueue = true;
     private boolean reviewed = false; //flag to distinguish if issue is closed or not
 

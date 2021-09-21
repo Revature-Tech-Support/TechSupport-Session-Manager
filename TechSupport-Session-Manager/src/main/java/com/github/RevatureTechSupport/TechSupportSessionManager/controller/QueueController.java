@@ -24,13 +24,13 @@ public class QueueController {
 
     //Get the oldest ticket in the queue
     public Mono<ServerResponse> getOldestTicket(ServerRequest req) {
-//        return ServerResponse.ok().body(this.queueRepository.findOldestTicket(), Ticket.class);
         return this.queueRepository.findOldestTicket()
                 .flatMap(ticket-> {
                     ticket.setInQueue(false);
+                    ticket.setReviewed(true);
                     ticket.setReviewTime(new Timestamp(System.currentTimeMillis()));
-                    return this.queueRepository.save(ticket)
-                        .flatMap(saved -> ServerResponse.ok().body(saved, Ticket.class))
+                    return this.queueRepository.save(ticket) //cassandra creates a duplicate entry b/c partition key inQueue is set to false
+                        .flatMap(saved -> ServerResponse.ok().body(Mono.just(saved), Ticket.class))
                             .switchIfEmpty(ServerResponse.notFound().build());
         });
     }
@@ -44,22 +44,29 @@ public class QueueController {
 
     //Update the ticket status to reviewed
     public Mono<ServerResponse> update(ServerRequest req) {
-
         return req.bodyToMono(String.class).flatMap(update -> {
             logger.info(update);
             String[] strArr = update.split(":"); // splits the string
             logger.info(strArr[1]);
             String closedBy = strArr[1].substring(2, strArr[1].length() - 3); //extracts the UUID of the person who closed the ticket
             logger.info(closedBy);
+            Timestamp closedTime = new Timestamp(System.currentTimeMillis());
 
-            return this.queueRepository.findById(UUID.fromString(req.pathVariable("id")))
-                    .flatMap(previous -> {
-                        previous.setReviewed(true);
-                        previous.setClosedBy(UUID.fromString(closedBy));
-                        previous.setClosedTime(new Timestamp(System.currentTimeMillis()));
-                        return this.queueRepository.save(previous)
-                                .flatMap(saved -> ServerResponse.ok().build());
-                    });
+            //find entry using partition key and id
+            return this.queueRepository.findByIdAndPk(UUID.fromString(req.pathVariable("id"))).log()
+                    .flatMap(duplicate -> {
+                        duplicate.setInQueue(true);
+                        duplicate.setClosedBy(UUID.fromString(closedBy));
+                        duplicate.setClosedTime(new Timestamp(System.currentTimeMillis()));
+
+                        return this.queueRepository.insert(duplicate).log()  //updates duplicate entry
+                                .flatMap(entry -> {
+                                    entry.setInQueue(false);
+                                    return this.queueRepository.save(entry).log();  //update entry
+                        });
+                    } )
+                    .log()
+                    .flatMap(updated -> ServerResponse.ok().build());
         }).switchIfEmpty(ServerResponse.notFound().build());
 
     }
