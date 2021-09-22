@@ -9,5 +9,4 @@ public class TechSupportSessionManagerApplication {
     public static void main(String[] args) {
         SpringApplication.run(TechSupportSessionManagerApplication.class, args);
     }
-
 }
