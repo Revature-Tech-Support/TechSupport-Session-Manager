@@ -64,6 +64,5 @@ public class QueueController {
                     }).log()
                     .flatMap(updated -> ServerResponse.ok().build());
         }).switchIfEmpty(ServerResponse.notFound().build());
-
     }
 }
