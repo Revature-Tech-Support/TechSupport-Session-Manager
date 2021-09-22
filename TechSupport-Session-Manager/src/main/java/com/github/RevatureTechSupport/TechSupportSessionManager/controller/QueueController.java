@@ -22,7 +22,7 @@ public class QueueController {
     private QueueRepository queueRepository;
 
     // Get All issues available in the queue
-    public Mono<ServerResponse> getAllIssues(ServerRequest request) {
+    public Mono<ServerResponse> getAllIssues(ServerRequest req) {
         return ServerResponse.ok().body(this.queueRepository.findAllInQueue(), Issue.class);
     }
 
