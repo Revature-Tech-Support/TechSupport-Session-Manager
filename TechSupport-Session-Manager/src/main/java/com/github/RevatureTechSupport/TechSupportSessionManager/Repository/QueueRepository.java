@@ -14,7 +14,7 @@ public interface QueueRepository extends ReactiveCassandraRepository<Issue, UUID
     @Query("SELECT * FROM issues WHERE inQueue = true AND reviewed = false ORDER BY openTime ASC limit 1 ALLOW FILTERING")
     Mono<Issue> findOldestTicket();
 
-    @Query("SELECT * FROM issues WHERE issueId =?0 ALLOW FILTERING")
+    @Query("SELECT * FROM issues WHERE issueId = ?0 ALLOW FILTERING")
     Mono<Issue> findById(UUID id);
 
     // Find entry using partition key inQueue and issueId
