@@ -16,6 +16,5 @@ public class RouterConfig {
         return route(GET("/queue/issue"), queueController::getOldestIssue)
                 .andRoute(POST("/queue"), queueController::create)
                 .andRoute(PUT("/queue/{id}"), queueController::update);
-
     }
 }
