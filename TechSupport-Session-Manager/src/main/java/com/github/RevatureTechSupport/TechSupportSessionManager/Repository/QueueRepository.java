@@ -18,7 +18,7 @@ public interface QueueRepository extends ReactiveCassandraRepository<Issue, UUID
     Mono<Issue> findById(UUID id);
 
     // Find entry using partition key inQueue and issueId
-    @Query("SELECT * FROM issues WHERE inQueue=false AND issueId =?0 ALLOW FILTERING")
+    @Query("SELECT * FROM issues WHERE inQueue = false AND issueId = ?0 ALLOW FILTERING")
     Mono<Issue> findByIdAndPk(UUID id);
 
 }
