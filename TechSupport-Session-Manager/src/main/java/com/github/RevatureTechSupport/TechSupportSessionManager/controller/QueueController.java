@@ -14,7 +14,6 @@ import java.net.URI;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-
 @Component
 public class QueueController {
     static Logger logger = LoggerFactory.getLogger(QueueController.class);
