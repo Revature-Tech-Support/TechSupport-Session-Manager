@@ -14,7 +14,6 @@ import java.net.URI;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-
 @Component
 public class QueueController {
     static Logger logger = LoggerFactory.getLogger(QueueController.class);
@@ -22,28 +21,37 @@ public class QueueController {
     @Autowired
     private QueueRepository queueRepository;
 
-    // Get the oldest ticket in the queue
-    public Mono<ServerResponse> getOldestIssue(ServerRequest req) {
-        return this.queueRepository.findOldestTicket()
-                .flatMap(issue -> {
-                    issue.setInQueue(false);
-                    issue.setReviewed(true);
-                    issue.setReviewTime(new Timestamp(System.currentTimeMillis()));
-                    return this.queueRepository.save(issue) // Cassandra creates a duplicate entry b/c partition key inQueue is set to false
-                            .flatMap(saved -> ServerResponse.ok().body(Mono.just(saved), Issue.class))
-                            .switchIfEmpty(ServerResponse.notFound().build());
-                });
+    // Get All issues available in the queue
+    public Mono<ServerResponse> getAllIssues(ServerRequest request) {
+        return ServerResponse.ok().body(this.queueRepository.findAllInQueue(), Issue.class);
     }
 
-    // Create a new Issue
+    // Get the oldest ticket in the queue
+    public Mono<ServerResponse> getOldestIssue(ServerRequest req) {
+        return ServerResponse.ok().body(this.queueRepository.findOldestTicket(),Issue.class);
+    }
+
+    // Create a new issue
     public Mono<ServerResponse> create(ServerRequest req) {
         return req.bodyToMono(Issue.class)
                 .flatMap(issue -> this.queueRepository.save(issue))
                 .flatMap(issue -> ServerResponse.created(URI.create("/queue/" + issue.getIssueId().toString())).build());
     }
 
-    // Update the ticket status to reviewed
-    public Mono<ServerResponse> update(ServerRequest req) {
+    // Remove the issue from the queue by setting inQueue to false and marks reviewed to true
+    public Mono<ServerResponse> removeIssueFromQueue(ServerRequest req){
+        return this.queueRepository.findById(UUID.fromString(req.pathVariable("id")))
+                .flatMap(issue -> {
+                    issue.setInQueue(false);
+                    issue.setReviewed(true);
+                    issue.setReviewTime(new Timestamp(System.currentTimeMillis()));
+                    return this.queueRepository.save(issue) // Cassandra creates a duplicate entry b/c partition key inQueue is set to false
+                            .flatMap(saved -> ServerResponse.ok().body(Mono.just(saved), Issue.class));
+                }).switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    // Close an issue by updating closedBy and closedTime
+    public Mono<ServerResponse> closeIssue(ServerRequest req) {
         return req.bodyToMono(String.class).flatMap(update -> {
             logger.info(update);
             String[] strArr = update.split(":");
@@ -65,7 +73,5 @@ public class QueueController {
                     }).log()
                     .flatMap(updated -> ServerResponse.ok().build());
         }).switchIfEmpty(ServerResponse.notFound().build());
-
     }
-
 }

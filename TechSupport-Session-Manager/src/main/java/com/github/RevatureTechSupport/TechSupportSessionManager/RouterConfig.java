@@ -14,8 +14,9 @@ public class RouterConfig {
     @Bean
     public RouterFunction<ServerResponse> routes(QueueController queueController) {
         return route(GET("/queue/issue"), queueController::getOldestIssue)
+                .andRoute(GET("/queue"), queueController::getAllIssues)
                 .andRoute(POST("/queue"), queueController::create)
-                .andRoute(PUT("/queue/{id}"), queueController::update);
-
+                .andRoute(PUT("/queue/{id}/update"), queueController::removeIssueFromQueue)
+                .andRoute(PUT("/queue/{id}/close"), queueController::closeIssue);
     }
 }
